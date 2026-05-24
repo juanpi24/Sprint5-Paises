@@ -1,0 +1,31 @@
+<!-- views/partials/navbar.ejs -->
+<nav class="navbar">
+  <div class="navbar-brand">
+    <a href="/paises">🌎 PaísesHispanos</a>
+  </div>
+
+  <button class="navbar-toggle" id="navToggle" aria-label="Menú" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+
+  <ul class="navbar-menu" id="navMenu">
+    <li>
+      <a href="/paises"
+         class="<%= locals.currentPath && currentPath === '/paises' ? 'active' : '' %>">
+        Dashboard
+      </a>
+    </li>
+    <li>
+      <a href="/paises/nuevo"
+         class="<%= locals.currentPath && currentPath === '/paises/nuevo' ? 'active' : '' %>">
+        + Agregar País
+      </a>
+    </li>
+    <li>
+      <a href="/about"
+         class="<%= locals.currentPath && currentPath === '/about' ? 'active' : '' %>">
+        Acerca de
+      </a>
+    </li>
+  </ul>
+</nav>

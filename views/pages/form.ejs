@@ -1,0 +1,147 @@
+<%# views/pages/form.ejs — Formulario unificado para crear y editar países %>
+<%
+  const esEdicion  = locals.accion === 'editar';
+  const d          = locals.pais   || {};
+  const e          = locals.errores || {};
+  const formAction = esEdicion ? `/paises/${d._id}?_method=PUT` : '/paises';
+
+  // Helpers para mostrar valores de array como string separado por comas
+  const toStr = (val) => Array.isArray(val) ? val.join(', ') : (val || '');
+%>
+
+<div class="page-header">
+  <div>
+    <h1 class="page-title"><%= esEdicion ? '✏️ Editar País' : '➕ Agregar País' %></h1>
+    <p class="page-subtitle">
+      <% if (esEdicion) { %>
+        Modificando: <strong><%= d.nombreComun || d.nombreOficial || 'País' %></strong>
+      <% } else { %>
+        Completá los campos para registrar un nuevo país hispanohablante.
+      <% } %>
+    </p>
+  </div>
+  <a href="/paises" class="btn btn-ghost">← Volver al dashboard</a>
+</div>
+
+<% if (e._general) { %>
+  <div class="alert alert-error">❌ <%= e._general %></div>
+<% } %>
+
+<% if (Object.keys(e).length > 0 && !e._general) { %>
+  <div class="alert alert-error">⚠️ Por favor corregí los errores marcados antes de continuar.</div>
+<% } %>
+
+<div class="card form-card">
+  <form action="<%= formAction %>" method="POST" novalidate>
+
+    <div class="form-grid">
+
+      <%# Nombre oficial %>
+      <div class="form-group form-group-full">
+        <label for="nombreOficial">Nombre oficial <span class="required">*</span></label>
+        <input type="text" id="nombreOficial" name="nombreOficial"
+               value="<%= d.nombreOficial || '' %>"
+               class="form-control <%= e.nombreOficial ? 'is-invalid' : '' %>"
+               placeholder="Ej: República Argentina" maxlength="90" />
+        <% if (e.nombreOficial) { %><div class="error-msg">⚠️ <%= e.nombreOficial %></div><% } %>
+      </div>
+
+      <%# Nombre común %>
+      <div class="form-group">
+        <label for="nombreComun">Nombre común (español)</label>
+        <input type="text" id="nombreComun" name="nombreComun"
+               value="<%= d.nombreComun || '' %>"
+               class="form-control"
+               placeholder="Ej: Argentina" maxlength="90" />
+      </div>
+
+      <%# Capital %>
+      <div class="form-group">
+        <label for="capital">Capital(es) <small class="text-muted">(separadas por coma)</small></label>
+        <input type="text" id="capital" name="capital"
+               value="<%= toStr(d.capital) %>"
+               class="form-control <%= e.capital ? 'is-invalid' : '' %>"
+               placeholder="Ej: Buenos Aires" />
+        <% if (e.capital) { %><div class="error-msg">⚠️ <%= e.capital %></div><% } %>
+      </div>
+
+      <%# Área %>
+      <div class="form-group">
+        <label for="area">Área (km²) <span class="required">*</span></label>
+        <input type="number" id="area" name="area"
+               value="<%= d.area != null ? d.area : '' %>"
+               class="form-control <%= e.area ? 'is-invalid' : '' %>"
+               placeholder="Ej: 2780400" min="0" step="any" />
+        <% if (e.area) { %><div class="error-msg">⚠️ <%= e.area %></div><% } %>
+      </div>
+
+      <%# Población %>
+      <div class="form-group">
+        <label for="poblacion">Población <span class="required">*</span></label>
+        <input type="number" id="poblacion" name="poblacion"
+               value="<%= d.poblacion != null ? d.poblacion : '' %>"
+               class="form-control <%= e.poblacion ? 'is-invalid' : '' %>"
+               placeholder="Ej: 45376763" min="0" />
+        <% if (e.poblacion) { %><div class="error-msg">⚠️ <%= e.poblacion %></div><% } %>
+      </div>
+
+      <%# Gini %>
+      <div class="form-group">
+        <label for="gini">Índice Gini <small class="text-muted">(0–100, opcional)</small></label>
+        <input type="number" id="gini" name="gini"
+               value="<%= (d.gini != null && d.gini !== '') ? d.gini : '' %>"
+               class="form-control <%= e.gini ? 'is-invalid' : '' %>"
+               placeholder="Ej: 42.4" min="0" max="100" step="0.1" />
+        <% if (e.gini) { %><div class="error-msg">⚠️ <%= e.gini %></div><% } %>
+      </div>
+
+      <%# Fronteras %>
+      <div class="form-group">
+        <label for="fronteras">
+          Fronteras <small class="text-muted">(3 letras mayúsculas c/u, separadas por coma)</small>
+        </label>
+        <input type="text" id="fronteras" name="fronteras"
+               value="<%= toStr(d.fronteras) %>"
+               class="form-control <%= e.fronteras ? 'is-invalid' : '' %>"
+               placeholder="Ej: BRA, CHL, BOL" />
+        <% if (e.fronteras) { %><div class="error-msg">⚠️ <%= e.fronteras %></div><% } %>
+      </div>
+
+      <%# usos horarios %>
+      <div class="form-group">
+        <label for="usos">Usos horarios <small class="text-muted">(separados por coma)</small></label>
+        <input type="text" id="usos" name="usos"
+               value="<%= toStr(d.usos) %>"
+               class="form-control"
+               placeholder="Ej: UTC-03:00" />
+      </div>
+
+      <%# Región %>
+      <div class="form-group">
+        <label for="region">Región</label>
+        <input type="text" id="region" name="region"
+               value="<%= d.region || 'Americas' %>"
+               class="form-control"
+               placeholder="Ej: Americas" />
+      </div>
+
+      <%# Subregión %>
+      <div class="form-group">
+        <label for="subregion">Subregión</label>
+        <input type="text" id="subregion" name="subregion"
+               value="<%= d.subregion || '' %>"
+               class="form-control"
+               placeholder="Ej: South America" />
+      </div>
+
+    </div><%# /form-grid %>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary btn-lg">
+        💾 <%= esEdicion ? 'Actualizar País' : 'Guardar País' %>
+      </button>
+      <a href="/paises" class="btn btn-ghost btn-lg">Cancelar</a>
+    </div>
+
+  </form>
+</div>

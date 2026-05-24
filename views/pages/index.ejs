@@ -1,0 +1,184 @@
+<%# views/pages/index.ejs — Dashboard principal %>
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Dashboard</h1>
+    <p class="page-subtitle">
+      <%= total %> países encontrados
+      <% if (locals.cache && cache.activo) { %>
+        &nbsp;·&nbsp;<span class="badge badge-info">Caché activo · expira en <%= cache.expiraEn %></span>
+      <% } %>
+    </p>
+  </div>
+  <div class="page-actions">
+    <form action="/paises/seed" method="POST" style="display:inline">
+      <button type="submit" class="btn btn-outline"
+        onclick="return confirm('¿Importar datos desde la API externa? Puede tardar unos segundos.')">
+        🔄 Importar desde API
+      </button>
+    </form>
+    <a href="/paises/exportar/csv?nombre=<%= filtros.nombre %>&capital=<%= filtros.capital %>&subregion=<%= filtros.subregion %>&pobMin=<%= filtros.pobMin %>&pobMax=<%= filtros.pobMax %>"
+       class="btn btn-outline">📥 Exportar CSV</a>
+    <a href="/paises/nuevo" class="btn btn-primary">+ Agregar País</a>
+  </div>
+</div>
+
+<%# ── Filtros (Avanzado #1) ──────────────────────────────────────────────── %>
+<form class="filters-form" method="GET" action="/paises">
+  <div class="filters-grid">
+    <div class="form-group">
+      <label for="f-nombre">Nombre</label>
+      <input type="text" id="f-nombre" name="nombre" value="<%= filtros.nombre %>"
+             placeholder="Buscar por nombre…" class="form-control" />
+    </div>
+    <div class="form-group">
+      <label for="f-capital">Capital</label>
+      <input type="text" id="f-capital" name="capital" value="<%= filtros.capital %>"
+             placeholder="Buscar por capital…" class="form-control" />
+    </div>
+    <div class="form-group">
+      <label for="f-subregion">Subregión</label>
+      <select id="f-subregion" name="subregion" class="form-control">
+        <option value="">Todas</option>
+        <% (subregiones || []).sort().forEach(sr => { %>
+          <option value="<%= sr %>" <%= filtros.subregion === sr ? 'selected' : '' %>><%= sr || '—' %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="f-pobMin">Pob. mínima</label>
+      <input type="number" id="f-pobMin" name="pobMin" value="<%= filtros.pobMin %>"
+             placeholder="0" class="form-control" min="0" />
+    </div>
+    <div class="form-group">
+      <label for="f-pobMax">Pob. máxima</label>
+      <input type="number" id="f-pobMax" name="pobMax" value="<%= filtros.pobMax %>"
+             placeholder="Sin límite" class="form-control" min="0" />
+    </div>
+    <div class="form-group form-group-actions">
+      <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
+      <a href="/paises" class="btn btn-ghost">✕ Limpiar</a>
+    </div>
+  </div>
+</form>
+
+<%# ── Tabla ───────────────────────────────────────────────────────────────── %>
+<div class="table-wrapper">
+  <% if (!paises || paises.length === 0) { %>
+    <div class="empty-state">
+      <div class="empty-icon">🌍</div>
+      <h3>No hay países registrados</h3>
+      <p>Importá los datos desde la API o agregá un país manualmente.</p>
+      <form action="/paises/seed" method="POST">
+        <button type="submit" class="btn btn-primary">🔄 Importar desde API</button>
+      </form>
+    </div>
+  <% } else { %>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Bandera</th>
+        <th>Nombre</th>
+        <th>Capital</th>
+        <th>Fronteras</th>
+        <th>Subregión</th>
+        <th class="text-right">Área (km²)</th>
+        <th class="text-right">Población</th>
+        <th class="text-right">Gini</th>
+        <th>Usos Horarios</th>
+        <th>Creador</th>
+        <th class="text-center">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% paises.forEach(pais => { %>
+      <%
+        const nombre     = pais.nombreComun || pais.nombreOficial || '—';
+        const capitales  = (pais.capital || []).join(', ') || '—';
+        const fronteras = (pais.fronteras || []).join(', ') || '—';
+        const usos      = (pais.usos   || []).slice(0, 2).join(', ') + ((pais.usos || []).length > 2 ? '…' : '');
+      %>
+      <tr>
+        <td class="flag-cell">
+          <% if (pais.banderas && (pais.banderas.svg || pais.banderas.png)) { %>
+            <img src="<%= pais.banderas.svg || pais.banderas.png %>"
+                 alt="Bandera de <%= nombre %>"
+                 class="flag-img"
+                 title="<%= pais.banderas.alt || nombre %>" />
+          <% } else { %>
+            <span class="flag-placeholder">🏳️</span>
+          <% } %>
+        </td>
+        <td>
+          <span class="country-name"><%= nombre %></span>
+          <% if (nombre !== pais.nombreOficial) { %>
+            <br/><small class="text-muted"><%= pais.nombreOficial %></small>
+          <% } %>
+        </td>
+        <td><%= capitales %></td>
+        <td><%= fronteras %></td>
+        <td><%= pais.subregion || '—' %></td>
+        <td class="text-right"><%= (pais.area      || 0).toLocaleString('es-AR') %></td>
+        <td class="text-right"><%= (pais.poblacion || 0).toLocaleString('es-AR') %></td>
+        <td class="text-right">
+          <% if (pais.gini != null) { %>
+            <span class="gini-badge"><%= pais.gini %></span>
+          <% } else { %>
+            <span class="text-muted">—</span>
+          <% } %>
+        </td>
+        <td><small><%= pais.usos || '—' %></small></td>
+        <td><span class="badge badge-creator"><%= pais.creador || '—' %></span></td>
+        <td class="actions-cell">
+          <a href="/paises/<%= pais._id %>/editar" class="btn btn-sm btn-warning" title="Editar">✏️</a>
+          <form action="/paises/<%= pais._id %>?_method=DELETE" method="POST" style="display:inline;" onsubmit="return confirmarEliminacion(event)">
+            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar">🗑️</button>
+          </form>
+        </td>
+      </tr>
+      <% }) %>
+    </tbody>
+
+    <%# ── Fila de totales (Avanzado) ──────────────────────────────────────── %>
+    <tfoot>
+      <tr class="totals-row">
+        <td colspan="5"><strong>TOTALES</strong> · <%= totales.cantidadPaises %> países</td>
+        <td class="text-right"><strong><%= (totales.totalArea || 0).toLocaleString('es-AR') %></strong></td>
+        <td class="text-right"><strong><%= (totales.totalPoblacion || 0).toLocaleString('es-AR') %></strong></td>
+        <td class="text-right">
+          <% if (totales.promedioGini != null) { %>
+            <strong><%= totales.promedioGini %></strong>
+            <br/><small class="text-muted">total (<%= totales.cantidadConGini %>)</small>
+          <% } else { %>
+            <span class="text-muted">—</span>
+          <% } %>
+        </td>
+        <td colspan="3"></td>
+      </tr>
+    </tfoot>
+  </table>
+  <% } %>
+</div>
+
+<%# ── Paginación (Avanzado #2) ───────────────────────────────────────────── %>
+<% if (paginas > 1) { %>
+<%
+  const qBase = `nombre=${filtros.nombre}&capital=${filtros.capital}&subregion=${filtros.subregion}&pobMin=${filtros.pobMin}&pobMax=${filtros.pobMax}&limite=${limite}`;
+  const inicio = Math.max(1, pagina - 2);
+  const fin    = Math.min(paginas, pagina + 2);
+%>
+<nav class="pagination">
+  <% if (pagina > 1) { %>
+    <a href="/paises?<%= qBase %>&pagina=1"            class="page-btn">« Primera</a>
+    <a href="/paises?<%= qBase %>&pagina=<%= pagina-1 %>" class="page-btn">‹ Anterior</a>
+  <% } %>
+  <% for (let i = inicio; i <= fin; i++) { %>
+    <a href="/paises?<%= qBase %>&pagina=<%= i %>"
+       class="page-btn <%= i === pagina ? 'page-btn-active' : '' %>"><%= i %></a>
+  <% } %>
+  <% if (pagina < paginas) { %>
+    <a href="/paises?<%= qBase %>&pagina=<%= pagina+1 %>" class="page-btn">Siguiente ›</a>
+    <a href="/paises?<%= qBase %>&pagina=<%= paginas %>"  class="page-btn">Última »</a>
+  <% } %>
+  <span class="page-info">Página <%= pagina %> de <%= paginas %> · <%= total %> resultados</span>
+</nav>
+<% } %>

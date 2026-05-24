@@ -1,0 +1,48 @@
+<!-- views/partials/footer.ejs -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-col">
+      <strong>🌎 PaísesHispanos</strong>
+      <p>Trabajo Práctico Final — Sprint 5</p>
+      <p>Node.js · Express · MongoDB · EJS</p>
+    </div>
+    <div class="footer-col">
+      <strong>Autor</strong>
+      <p><%= process.env.CREADOR || 'Estudiante' %></p>
+    </div>
+    <div class="footer-col">
+      <strong>Fuente de datos</strong>
+      <a href="https://restcountries.com" target="_blank" rel="noopener">restcountries.com</a>
+    </div>
+    <div class="footer-col">
+      <strong>© <%= new Date().getFullYear() %></strong>
+      <p>Proyecto académico</p>
+    </div>
+  </div>
+</footer>
+
+<!--Biblioteca SweetAlert2: ventanas modales atractivas, animadas y personalizables--> 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function confirmarEliminacion(event) {
+  event.preventDefault();
+
+  const form = event.target;
+
+  Swal.fire({
+    title: "¿Eliminar país?",
+    text: "Esta acción no se puede deshacer",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: "Sí, eliminar",
+    cancelButtonText: "Cancelar"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      form.submit();
+    }
+  });
+}
+</script>

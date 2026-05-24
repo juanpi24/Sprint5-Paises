@@ -1,0 +1,82 @@
+<%# views/pages/about.ejs %>
+<div class="page-header">
+  <h1 class="page-title">📖 Acerca del Proyecto</h1>
+</div>
+
+<div class="about-grid">
+
+  <div class="card">
+    <h2>🎯 Objetivo</h2>
+    <p>Construir una aplicación web con <strong>Node.js</strong>, <strong>Express</strong> y <strong>MongoDB</strong>
+    que consuma datos desde una API externa, los procese y los exponga mediante un dashboard con operaciones CRUD completas.</p>
+  </div>
+
+  <div class="card">
+    <h2>🛠️ Tecnologías</h2>
+    <ul class="tech-list">
+      <li><span class="tech-badge">Node.js</span> Runtime ESModules</li>
+      <li><span class="tech-badge">Express 5</span> Framework web MVC</li>
+      <li><span class="tech-badge">MongoDB</span> Base de datos NoSQL</li>
+      <li><span class="tech-badge">Mongoose 9</span> ODM + validaciones</li>
+      <li><span class="tech-badge">EJS</span> Motor de plantillas</li>
+      <li><span class="tech-badge">express-ejs-layouts</span> Layout base</li>
+      <li><span class="tech-badge">express-session</span> Sesiones + Flash</li>
+      <li><span class="tech-badge">Axios</span> Consumo de API externa</li>
+      <li><span class="tech-badge">express-validator</span> Validaciones</li>
+      <li><span class="tech-badge">method-override</span> PUT/DELETE en formularios</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>🏗️ Arquitectura MVC con capas</h2>
+    <pre class="code-block">app.mjs               ← Entry point
+config/
+  dbConfig.mjs        ← Conexión MongoDB
+controllers/
+  paisController.mjs  ← Maneja HTTP
+middlewares/
+  flashMiddleware.mjs ← Flash messages
+models/
+  paisModel.mjs       ← Schema Mongoose
+repositories/
+  paisRepository.mjs  ← Acceso a datos
+routes/
+  paisRoutes.mjs      ← Define rutas
+services/
+  apiService.mjs      ← API externa + caché
+  paisService.mjs     ← Lógica de negocio
+validations/
+  paisValidations.mjs ← Reglas de validación
+views/
+  layouts/main.ejs    ← Layout base
+  pages/              ← Vistas
+  partials/           ← Navbar + Footer</pre>
+  </div>
+
+  <div class="card">
+    <h2>🌐 Fuente de Datos</h2>
+    <code class="code-inline">https://restcountries.com/v3.1/region/america</code>
+    <p style="margin-top:1rem">Se filtran únicamente los países con <code>languages.spa</code>
+    y se limpian campos innecesarios antes de persistir en MongoDB.</p>
+  </div>
+
+  <div class="card">
+    <h2>⭐ Funcionalidades avanzadas</h2>
+    <ul>
+      <li>✅ Búsqueda y filtrado en el dashboard</li>
+      <li>✅ Paginación del listado (servidor)</li>
+      <li>✅ Caché en memoria de la API (configurable)</li>
+      <li>✅ Fila de totales: población, área, promedio Gini</li>
+      <li>✅ Exportación CSV del listado filtrado</li>
+      <li>✅ Flash messages vía sesión</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>👤 Autor</h2>
+    <p><strong><%= process.env.CREADOR || 'Estudiante' %></strong></p>
+    <p>Trabajo Práctico Final — Sprint 5</p>
+    <p>Cursada: Node.js + MongoDB</p>
+  </div>
+
+</div>

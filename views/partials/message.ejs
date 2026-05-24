@@ -1,0 +1,15 @@
+<%# ── Flash messages (vienen de la sesión via flashMiddleware) ── %>
+    <% if (locals.flash) { %>
+      <% if (flash.success) { %>
+        <div class="alert alert-success" id="flashMsg">
+          <span>✅ <%= flash.success %></span>
+          <button class="alert-close" onclick="this.parentElement.remove()">✕</button>
+        </div>
+      <% } %>
+      <% if (flash.error) { %>
+        <div class="alert alert-error" id="flashMsg">
+          <span>❌ <%= flash.error %></span>
+          <button class="alert-close" onclick="this.parentElement.remove()">✕</button>
+        </div>
+      <% } %>
+    <% } %>
