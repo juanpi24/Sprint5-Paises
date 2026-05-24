@@ -136,4 +136,4 @@ Abrí: **http://localhost:3000**
 
 ## 👤 Autor
 
-**<%= CREADOR %>** — Trabajo Práctico Final Sprint 5 · Cursada Node.js + MongoDB
+**Juan Pablo Millicay** — Trabajo Práctico Final Sprint 5 · Cursada Node.js + MongoDB
