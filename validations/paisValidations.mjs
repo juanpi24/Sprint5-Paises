@@ -3,6 +3,7 @@
 // Separadas en su propia carpeta, igual que en el proyecto de referencia.
 
 import { body, validationResult } from 'express-validator';
+import Pais from '../models/paisModel.mjs';
 
 /**
  * Reglas de validación para crear/editar un país.
@@ -12,13 +13,31 @@ export const reglasValidacionPais = [
   body('nombreOficial')
     .trim()   //  Elimina espacios al inicio y al final
     .notEmpty().withMessage('El nombre oficial es obligatorio')   // No puede estar vacío
-    .isLength({ min: 3, max: 90 }).withMessage('El nombre oficial debe tener entre 3 y 90 caracteres'),  // Longitud entre 3 y 90 caracteres
+    .isLength({ min: 3, max: 90 }).withMessage('El nombre oficial debe tener entre 3 y 90 caracteres')  // Longitud entre 3 y 90 caracteres
+
+    // validamos que el mismo creador no registre dos países con el mismo nombre oficial.  
+    .custom(async (value, { req }) => {
+            const creadorActual = process.env.CREADOR; // Obtenemos el creador actual desde las variables de entorno
+            const { id } = req.params; // Obtenemos el ID de la URL
+
+            const existeDuplicado = await Pais.findOne({
+                tipoDoc: "Pais",
+                nombreOficial: value.trim(),
+                creador: creadorActual,
+                _id: { $ne: id } // Ignora el documento actual
+            });
+
+            if (existeDuplicado) {
+                throw new Error('Ya existe otro país registrado con este nombre oficial.');
+            }
+            return true;
+        }),
 
   body('capital')
     .optional()  // Es opcional, pero si se proporciona debe cumplir las reglas
     .custom((value) => {    // Puede ser una cadena con comas o un array. En ambos casos, cada capital debe tener entre 3 y 90 caracteres.
       if (!value) return true;  // Si no se proporciona, no hay error
-      const arr = Array.isArray(value)    // Si es un array, lo usamos tal cual; si es una cadena, la dividimos por comas
+      const arr = Array.isArray(value)    
         ? value     //  Si es un array, lo usamos tal cual
         : (value || '').split(',').map((v) => v.trim()).filter(Boolean);    // Si es una cadena, la dividimos por comas, eliminamos espacios y filtramos vacíos 
       for (const c of arr) {   // Validamos cada capital individualmente

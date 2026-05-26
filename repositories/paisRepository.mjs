@@ -67,7 +67,7 @@ export const findById = async (id) => {
  */
 export const create = async (datos) => {
 
-  // Unimos los datos que vienen del formulario con el tipo de documento.  Esto asegura que cada país creado tenga el campo tipoDoc con el valor 'Pais', lo cual es importante para mantener la integridad de los datos y permitir futuras consultas específicas por tipo de documento en la colección compartida.
+  // Unimos los datos que vienen del formulario con el tipo de documento. Esto asegura que cada documento creado a través de este método tenga el tipo correcto, manteniendo la integridad de la colección compartida.
   const pais = new Pais(
     { 
     ...datos, 
@@ -93,8 +93,9 @@ export const updateById = async (id, datos) => {
       tipoDoc: 'Pais' // Nos aseguramos de que no puedan borrar o cambiar el tipoDoc en el body
     }, 
     { 
-      new: true,          // Devuelve el documento ya modificado en lugar del viejo
-      runValidators: true // Obliga a Mongoose a ejecutar las validaciones del esquema al actualizar
+      returnDocument: 'after', // Alternativa moderna a new: true para obtener el documento actualizado
+      runValidators: true, // Obligatorio para mantener la integridad de los datos al actualizar
+      context: 'query'    // Necesario para que algunas validaciones funcionen correctamente en findOneAndUpdate
     }
   ).lean(); // Opcional: sumamos lean() si solo vas a enviar los datos de respuesta al cliente
 };
