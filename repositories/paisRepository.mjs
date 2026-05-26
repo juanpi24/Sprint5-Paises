@@ -125,8 +125,9 @@ export const upsertByNombre = async (nombreOficial, datos) => {
       tipoDoc: 'Pais' // Inyección obligatoria: Si se crea (upsert), nace como 'Pais'
     },
     { 
-      upsert: true, 
-      new: true, 
+      upsert: true, // Si no encuentra un documento con ese nombreOficial, crea uno nuevo con esos datos. Si lo encuentra, lo actualiza.
+      //new: true, 
+      returnDocument: 'after', // Alternativa moderna a new: true para obtener el documento actualizado o creado
       runValidators: true  // 👈 CRUCIAL: Si viene un dato corrupto de la API, frena el proceso acá
     }
   );

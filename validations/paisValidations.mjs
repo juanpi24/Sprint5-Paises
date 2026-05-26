@@ -86,13 +86,24 @@ export const extraerErrores = (req) => {  // Extrae los errores de validación d
   return errores;  // Devuelve el objeto de errores
 };
 
-
 /**
- * Convierte un valor a un array de strings limpio.
- * Maneja formatos separados por coma, arrays existentes o valores vacíos.
+ * Convierte un valor a un array de strings limpio (remueve vacíos y espacios).
  */
 export const toArray = (valor) => {
   if (Array.isArray(valor)) return valor.filter(Boolean); 
   if (!valor || String(valor).trim() === '') return [];
   return String(valor).split(',').map((v) => v.trim()).filter(Boolean);
+};
+
+/**
+ * Traduce y estructura los errores crudos que arroja MongoDB / Mongoose
+ */
+export const formatearErrorDB = (err) => {
+  const errores = {};
+  if (err.code === 11000) {
+    errores.nombreOficial = 'Ya existe un país con ese nombre oficial en tus registros.';
+  } else {
+    errores._general = err.message;
+  }
+  return errores;
 };
