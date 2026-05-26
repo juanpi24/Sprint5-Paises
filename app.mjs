@@ -39,8 +39,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 // ── Sesiones (necesario para los flash messages)
 app.use(session({
   secret: process.env.SESSION_SECRET || 'supersecreto123',
-  resave: false,
-  saveUninitialized: true,
+  resave: false,    // No guarda la sesión si no se ha modificado 
+  saveUninitialized: true,   // Guarda la sesión aunque no se modifique (necesario para flash messages) 
 }));
 
 // ── Middleware global de log

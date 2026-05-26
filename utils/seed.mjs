@@ -1,33 +1,45 @@
 // utils/seed.mjs
-// Script independiente para poblar la base de datos desde la API externa.
-// Ejecutar con: npm run seed
-
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import { obtenerPaisesHispanohablantes } from '../services/apiService.mjs';
-import Pais from '../models/paisModel.mjs';
+import * as apiService from '../services/apiService.mjs';
+import * as paisService from '../services/paisService.mjs';
+
+const adaptarDatosAPI = (p) => ({
+  nombreOficial: (p.nombreOficial || '').trim(),
+  nombreComun:   (p.nombreComun   || '').trim(),
+  capital:       p.capital,
+  fronteras:     p.fronteras,
+  usos:          p.usos,
+  area:          p.area,
+  poblacion:     p.poblacion,
+  gini:          p.gini,
+  region:        p.region,
+  subregion:     p.subregion,
+  banderas:      p.banderas,
+  creador:       process.env.CREADOR || 'Estudiante' 
+});
 
 const seed = async () => {
   try {
     console.log('🔌 Conectando a MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Conectado a:', mongoose.connection.host);
+    console.log('✅ Conectado con éxito a la base de datos');
 
-    console.log('🌐 Obteniendo datos de la API...');
-    const paises = await obtenerPaisesHispanohablantes();
-    console.log(`📋 ${paises.length} países hispanohablantes encontrados`);
+    console.log('🌐 Obteniendo y procesando países desde la API...');
+    const paises = await apiService.obtenerPaisesHispanohablantes();
+    console.log(`📋 Se procesarán ${paises.length} países hispanohablantes`);
 
     let ok = 0, errores = 0;
 
     for (const p of paises) {
       if (!p.nombreOficial) { errores++; continue; }
       try {
-        await Pais.findOneAndUpdate(
-          { nombreOficial: p.nombreOficial },
-          p,
-          { upsert: true, new: true, runValidators: false }
-        );
-        console.log(`  ✓ ${p.nombreOficial}`);
+        const datosLimpios = adaptarDatosAPI(p);
+
+        // CORREGIDO: Llamamos a la capa de servicios para que ejecute el validador estructural
+        // y asigne correctamente el discriminador de colección.
+        await paisService.upsertByNombre(datosLimpios.nombreOficial, datosLimpios);
+        console.log(`  ✓ ${datosLimpios.nombreOficial}`);
         ok++;
       } catch (err) {
         console.warn(`  ✗ Error con "${p.nombreOficial}": ${err.message}`);
@@ -36,14 +48,14 @@ const seed = async () => {
     }
 
     console.log('\n──────────────────────────────');
-    console.log(`✅ Importados: ${ok}  ❌ Errores: ${errores}`);
+    console.log(`✅ Proceso finalizado. Importados/Actualizados: ${ok} | Errores: ${errores}`);
     console.log('──────────────────────────────');
 
   } catch (err) {
-    console.error('❌ Error fatal:', err.message);
+    console.error('❌ Error fatal en el script:', err.message);
   } finally {
     await mongoose.disconnect();
-    console.log('🔌 Desconectado de MongoDB');
+    console.log('🔌 Desconectado de MongoDB de forma segura');
     process.exit(0);
   }
 };

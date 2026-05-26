@@ -5,8 +5,12 @@
   const e          = locals.errores || {};
   const formAction = esEdicion ? `/paises/${d._id}?_method=PUT` : '/paises';
 
-  // Helpers para mostrar valores de array como string separado por comas
-  const toStr = (val) => Array.isArray(val) ? val.join(', ') : (val || '');
+  // CORREGIDO: Helper blindado. Si el valor ya es un string (proviene de req.body tras un error), 
+  // lo devuelve intacto. Si es un Array (proviene de la Base de Datos), lo une con comas.
+  const toStr = (val) => {
+    if (Array.isArray(val)) return val.join(', ');
+    return typeof val === 'string' ? val : '';
+  };
 %>
 
 <div class="page-header">
@@ -20,7 +24,7 @@
       <% } %>
     </p>
   </div>
-  <a href="/paises" class="btn btn-ghost">← Volver al dashboard</a>
+  <a href="/paises" class=\"btn btn-ghost\">← Volver al dashboard</a>
 </div>
 
 <% if (e._general) { %>
@@ -33,31 +37,33 @@
 
 <div class="card form-card">
   <form action="<%= formAction %>" method="POST" novalidate>
-
+    
     <div class="form-grid">
-
-      <%# Nombre oficial %>
-      <div class="form-group form-group-full">
+      
+      <%# Nombre Oficial %>
+      <div class="form-group">
         <label for="nombreOficial">Nombre oficial <span class="required">*</span></label>
         <input type="text" id="nombreOficial" name="nombreOficial"
                value="<%= d.nombreOficial || '' %>"
                class="form-control <%= e.nombreOficial ? 'is-invalid' : '' %>"
-               placeholder="Ej: República Argentina" maxlength="90" />
+               placeholder="Ej: República Argentina" required />
         <% if (e.nombreOficial) { %><div class="error-msg">⚠️ <%= e.nombreOficial %></div><% } %>
       </div>
 
-      <%# Nombre común %>
+      <%# Nombre Común %>
       <div class="form-group">
-        <label for="nombreComun">Nombre común (español)</label>
+        <label for="nombreComun">Nombre común</label>
+        <%# CORREGIDO: Cambiado name="nombre" por name="nombreComun" para sincronizar con el backend %>
         <input type="text" id="nombreComun" name="nombreComun"
                value="<%= d.nombreComun || '' %>"
-               class="form-control"
-               placeholder="Ej: Argentina" maxlength="90" />
+               class="form-control <%= e.nombreComun ? 'is-invalid' : '' %>"
+               placeholder="Ej: Argentina" />
+        <% if (e.nombreComun) { %><div class="error-msg">⚠️ <%= e.nombreComun %></div><% } %>
       </div>
 
-      <%# Capital %>
+      <%# Capitales %>
       <div class="form-group">
-        <label for="capital">Capital(es) <small class="text-muted">(separadas por coma)</small></label>
+        <label for="capital">Capital / Capitales <small class="text-muted">(separadas por coma)</small></label>
         <input type="text" id="capital" name="capital"
                value="<%= toStr(d.capital) %>"
                class="form-control <%= e.capital ? 'is-invalid' : '' %>"
@@ -65,41 +71,39 @@
         <% if (e.capital) { %><div class="error-msg">⚠️ <%= e.capital %></div><% } %>
       </div>
 
-      <%# Área %>
-      <div class="form-group">
-        <label for="area">Área (km²) <span class="required">*</span></label>
-        <input type="number" id="area" name="area"
-               value="<%= d.area != null ? d.area : '' %>"
-               class="form-control <%= e.area ? 'is-invalid' : '' %>"
-               placeholder="Ej: 2780400" min="0" step="any" />
-        <% if (e.area) { %><div class="error-msg">⚠️ <%= e.area %></div><% } %>
-      </div>
-
       <%# Población %>
       <div class="form-group">
         <label for="poblacion">Población <span class="required">*</span></label>
         <input type="number" id="poblacion" name="poblacion"
-               value="<%= d.poblacion != null ? d.poblacion : '' %>"
+               value="<%= d.poblacion !== undefined ? d.poblacion : '' %>"
                class="form-control <%= e.poblacion ? 'is-invalid' : '' %>"
-               placeholder="Ej: 45376763" min="0" />
+               placeholder="Ej: 46000000" required />
         <% if (e.poblacion) { %><div class="error-msg">⚠️ <%= e.poblacion %></div><% } %>
       </div>
 
-      <%# Gini %>
+      <%# Área %>
       <div class="form-group">
-        <label for="gini">Índice Gini <small class="text-muted">(0–100, opcional)</small></label>
-        <input type="number" id="gini" name="gini"
-               value="<%= (d.gini != null && d.gini !== '') ? d.gini : '' %>"
+        <label for="area">Área (km²) <span class="required">*</span></label>
+        <input type="number" id="area" name="area" step="any"
+               value="<%= d.area !== undefined ? d.area : '' %>"
+               class="form-control <%= e.area ? 'is-invalid' : '' %>"
+               placeholder="Ej: 2780400" required />
+        <% if (e.area) { %><div class="error-msg">⚠️ <%= e.area %></div><% } %>
+      </div>
+
+      <%# Índice Gini %>
+      <div class="form-group">
+        <label for="gini">Índice Gini <small class="text-muted">(opcional, 0-100)</small></label>
+        <input type="number" id="gini" name="gini" step="0.1"
+               value="<%= d.gini !== undefined && d.gini !== null ? d.gini : '' %>"
                class="form-control <%= e.gini ? 'is-invalid' : '' %>"
-               placeholder="Ej: 42.4" min="0" max="100" step="0.1" />
+               placeholder="Ej: 42.9" />
         <% if (e.gini) { %><div class="error-msg">⚠️ <%= e.gini %></div><% } %>
       </div>
 
       <%# Fronteras %>
       <div class="form-group">
-        <label for="fronteras">
-          Fronteras <small class="text-muted">(3 letras mayúsculas c/u, separadas por coma)</small>
-        </label>
+        <label for="fronteras">Códigos de fronteras <small class="text-muted">(3 letras, separados por coma)</small></label>
         <input type="text" id="fronteras" name="fronteras"
                value="<%= toStr(d.fronteras) %>"
                class="form-control <%= e.fronteras ? 'is-invalid' : '' %>"
@@ -107,7 +111,7 @@
         <% if (e.fronteras) { %><div class="error-msg">⚠️ <%= e.fronteras %></div><% } %>
       </div>
 
-      <%# usos horarios %>
+      <%# Usos Horarios %>
       <div class="form-group">
         <label for="usos">Usos horarios <small class="text-muted">(separados por coma)</small></label>
         <input type="text" id="usos" name="usos"
@@ -134,13 +138,13 @@
                placeholder="Ej: South America" />
       </div>
 
-    </div><%# /form-grid %>
+    </div>
 
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary btn-lg">
-        💾 <%= esEdicion ? 'Actualizar País' : 'Guardar País' %>
+      <button type="submit" class="btn btn-primary">
+        <%= esEdicion ? '💾 Guardar Cambios' : '🚀 Crear País' %>
       </button>
-      <a href="/paises" class="btn btn-ghost btn-lg">Cancelar</a>
+      <a href="/paises" class="btn btn-secondary">Cancelar</a>
     </div>
 
   </form>

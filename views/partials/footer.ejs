@@ -45,4 +45,26 @@ function confirmarEliminacion(event) {
     }
   });
 }
+
+// formulario importar api externa
+function confirmarImportar(event) {
+  event.preventDefault();
+
+  const form = event.target;
+
+  Swal.fire({
+    title: "¿Importar datos?",
+    text: "¿Importar datos desde la API externa? Puede tardar unos segundos.",
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonColor: '#3085d6',
+    cancelButtonColor: '#d33',
+    confirmButtonText: "Sí, importar",
+    cancelButtonText: "Cancelar"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      form.submit();
+    }
+  });
+}
 </script>

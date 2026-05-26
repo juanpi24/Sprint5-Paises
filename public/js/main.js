@@ -22,8 +22,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
       el.style.transition = 'opacity .5s';
       el.style.opacity    = '0';
-      setTimeout(() => el.remove(), 500);
-    }, 4000);
+      setTimeout(() => el.remove(), 500);  // Elimina el elemento del DOM después de la transición
+    }, 4000);  // 4 segundos antes de iniciar el desvanecimiento
   });
 
 });

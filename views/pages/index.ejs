@@ -10,9 +10,8 @@
     </p>
   </div>
   <div class="page-actions">
-    <form action="/paises/seed" method="POST" style="display:inline">
-      <button type="submit" class="btn btn-outline"
-        onclick="return confirm('¿Importar datos desde la API externa? Puede tardar unos segundos.')">
+    <form action="/paises/seed" method="POST" style="display:inline;" onsubmit="return confirmarImportar(event)">
+      <button type="submit" class="btn btn-outline">
         🔄 Importar desde API
       </button>
     </form>
@@ -68,7 +67,7 @@
       <div class="empty-icon">🌍</div>
       <h3>No hay países registrados</h3>
       <p>Importá los datos desde la API o agregá un país manualmente.</p>
-      <form action="/paises/seed" method="POST">
+      <form action="/paises/seed" method="POST" style="display:inline;" onsubmit="return confirmarImportar(event)">
         <button type="submit" class="btn btn-primary">🔄 Importar desde API</button>
       </form>
     </div>

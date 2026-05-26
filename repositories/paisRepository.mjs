@@ -12,69 +12,137 @@ import Pais from '../models/paisModel.mjs';
  */
 
 // El método lean() devuelve objetos JavaScript simples en lugar de documentos Mongoose, lo que mejora el rendimiento cuando no se necesitan métodos de instancia.
-export const findAll = async (query = {}, skip = 0, limite = 20) => {
-  return Pais.find(query).sort({ nombreOficial: 1 }).skip(skip).limit(limite).lean();
+export const findAll = async (query = {}, skip, limite) => { 
+  // Combinamos la query que viene por parámetro con el filtro de tipoDoc
+  // para asegurarnos de traer SOLO países de la colección 'Grupo-12'
+  const filtroSeguro = { 
+    ...query, 
+    tipoDoc: 'Pais' 
+  };
+  
+  // Ejecutamos la consulta con el filtro seguro, paginación y ordenados por nombreOficial.
+  return await Pais.find(filtroSeguro)
+  .sort({ nombreOficial: 1 })  // Ordena por nombreOficial ascendente para consistencia
+  .skip(skip)  // skip y limit para paginación. skip se calcula en el servicio según la página actual y el límite por página.
+  .limit(limite)  // limite para limitar la cantidad de resultados devueltos, también calculado en el servicio.
+  .lean(); // lean() mejora el rendimiento si solo necesitamos datos sin métodos de instancia  
 };
 
 /**
  * Cuenta documentos según un filtro.
  */
 export const countAll = async (query = {}) => {
-  return Pais.countDocuments(query);
+  // Combinamos la query con el identificador del tipo de documento
+  const filtroSeguro = { 
+    ...query, 
+    tipoDoc: 'Pais' 
+  };
+  return await Pais.countDocuments(filtroSeguro);
 };
 
 /**
  * Obtiene todos sin paginación (para CSV, totales, etc.)
  */
 export const findAllNoPaginate = async (query = {}) => {
-  return Pais.find(query).sort({ nombreOficial: 1 }).lean();
+  const filtroSeguro = { 
+    ...query, 
+    tipoDoc: 'Pais' 
+  };
+  return await Pais.find(filtroSeguro).sort({ nombreOficial: 1 }).lean();
 };
 
+
 /**
- * Busca un país por su _id de MongoDB.
+ * Busca un país por su _id de MongoDB y asegura su tipo.
  */
 export const findById = async (id) => {
-  return Pais.findById(id).lean();
+  return await Pais.findOne({ 
+    _id: id, 
+    tipoDoc: 'Pais' 
+  }).lean(); // lean() mejora el rendimiento al retornar un objeto plano de JS
 };
 
 /**
  * Crea un nuevo documento País.
  */
 export const create = async (datos) => {
-  const pais = new Pais(datos);
+
+  // Unimos los datos que vienen del formulario con el tipo de documento.  Esto asegura que cada país creado tenga el campo tipoDoc con el valor 'Pais', lo cual es importante para mantener la integridad de los datos y permitir futuras consultas específicas por tipo de documento en la colección compartida.
+  const pais = new Pais(
+    { 
+    ...datos, 
+    tipoDoc: 'Pais' 
+  });
+
+  // .save() ejecuta las validaciones del esquema por defecto antes de guardar.  
   return pais.save();
+
 };
 
 /**
- * Actualiza un país por _id con runValidators activo.
+ * Actualiza un país por _id con runValidators activo y asegura su tipo.
  */
 export const updateById = async (id, datos) => {
-  return Pais.findByIdAndUpdate(id, datos, { new: true, runValidators: true });
+  return await Pais.findOneAndUpdate(
+    { 
+      _id: id, 
+      tipoDoc: 'Pais' // Filtro de seguridad: solo actualiza si es un país
+    }, 
+    { 
+      ...datos, 
+      tipoDoc: 'Pais' // Nos aseguramos de que no puedan borrar o cambiar el tipoDoc en el body
+    }, 
+    { 
+      new: true,          // Devuelve el documento ya modificado en lugar del viejo
+      runValidators: true // Obliga a Mongoose a ejecutar las validaciones del esquema al actualizar
+    }
+  ).lean(); // Opcional: sumamos lean() si solo vas a enviar los datos de respuesta al cliente
 };
 
 /**
  * Elimina un país por _id.
  */
 export const deleteById = async (id) => {
-  return Pais.findByIdAndDelete(id);
+  return await Pais.findOneAndDelete({ 
+    _id: id, 
+    tipoDoc: 'Pais' 
+  });
 };
 
 /**
  * Upsert por nombreOficial (para el seed desde API).
+ * Mantiene la integridad dentro de la colección compartida.
  */
 export const upsertByNombre = async (nombreOficial, datos) => {
-  return Pais.findOneAndUpdate(
-    { nombreOficial },
-    datos,
-    { upsert: true, new: true, runValidators: false }
+  return await Pais.findOneAndUpdate(
+    { 
+      nombreOficial,
+      tipoDoc: 'Pais' // Filtro: Evita pisar un superhéroe si coincide el nombre
+    },
+    { 
+      ...datos, 
+      tipoDoc: 'Pais' // Inyección obligatoria: Si se crea (upsert), nace como 'Pais'
+    },
+    { 
+      upsert: true, 
+      new: true, 
+      runValidators: true  // 👈 CRUCIAL: Si viene un dato corrupto de la API, frena el proceso acá
+    }
   );
 };
 
 /**
- * Devuelve los valores únicos de subregion.
+ * Devuelve los valores únicos de subregion filtrados por creador y tipo de documento.
  */
 export const findSubregiones = async (creador) => {
-  // Filtra por creador para no mezclar subregiones de otros usuarios
-  const filtro = creador ? { creador } : {};
-  return Pais.distinct('subregion', filtro);
+  // Inicializamos el filtro asegurando que SOLO busque en documentos de tipo 'Pais'
+  const filtro = { tipoDoc: 'Pais' };
+
+  // Si se proporciona un creador específico, lo sumamos al filtro
+  if (creador) {
+    filtro.creador = creador;
+  }
+
+  // Ejecuta la consulta distina sobre el campo 'subregion' con el filtro seguro
+  return await Pais.distinct('subregion', filtro);
 };

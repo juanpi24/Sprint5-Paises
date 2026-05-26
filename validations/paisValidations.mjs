@@ -23,7 +23,7 @@ export const reglasValidacionPais = [
         : (value || '').split(',').map((v) => v.trim()).filter(Boolean);    // Si es una cadena, la dividimos por comas, eliminamos espacios y filtramos vacíos 
       for (const c of arr) {   // Validamos cada capital individualmente
         if (c.length < 3 || c.length > 90)   // Si alguna capital no cumple la longitud, lanzamos un error
-          throw new Error('Cada capital debe tener entre 3 y 90 caracteres');
+          throw new Error(`"${c}" Cada capital debe tener entre 3 y 90 caracteres`);
       }
       return true;
     }),

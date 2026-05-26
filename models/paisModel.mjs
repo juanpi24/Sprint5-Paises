@@ -6,25 +6,36 @@ import mongoose from 'mongoose';
 
 const paisSchema = new mongoose.Schema(
   {
+
+    // Identificador para convivir en la colección Grupo-12
+    tipoDoc: {
+      type: String,
+      default: 'Pais',
+      immutable: true // Evita que se modifique por error una vez creado
+    },
+    
     // Nombre oficial (ej: "República Argentina")
     nombreOficial: {
       type: String,
       required: [true, 'El nombre oficial es obligatorio'],
-      minlength: [3, 'El nombre oficial debe tener al menos 3 caracteres'],
-      maxlength: [90, 'El nombre oficial no puede superar 90 caracteres'],
-      unique: true, // No puede haber dos países con el mismo nombre
+      minLength: [3, 'El nombre oficial debe tener al menos 3 caracteres'],
+      maxLength: [90, 'El nombre oficial no puede superar 90 caracteres'],
+      //unique: true, // No puede haber dos países con el mismo nombre oficial
       trim: true,   // Elimina espacios al principio y al final
     },
+
     // Nombre común en español (ej: "Argentina")
     nombreComun: {
       type: String,
       trim: true,
-      default: '',
+      default: '',   // Opcional, puede no tener valor 
     },
+
     // Capitales (array, ej: ["Buenos Aires"])
     capital: {
       type: [String],
       default: [],
+      // Validación personalizada para asegurar que cada capital tenga entre 3 y 90 caracteres.
       validate: {
         validator: (arr) => arr.every((c) => c.length >= 3 && c.length <= 90),
         message: 'Cada capital debe tener entre 3 y 90 caracteres',
@@ -34,6 +45,7 @@ const paisSchema = new mongoose.Schema(
     fronteras: {
       type: [String],
       default: [],
+      // Validación personalizada para asegurar que cada código de frontera tenga exactamente 3 letras mayúsculas
       validate: {
         validator: (arr) => arr.every((b) => /^[A-Z]{3}$/.test(b)),
         message: 'Cada código de frontera debe tener exactamente 3 letras mayúsculas',
@@ -89,6 +101,12 @@ const paisSchema = new mongoose.Schema(
     },
   },
   { timestamps: true }  // Agrega createdAt y updatedAt automáticamente
+);
+
+// Índice compuesto: dentro del mismo tipoDoc no puede repetirse nombreOficial
+paisSchema.index(
+  { tipoDoc: 1, nombreOficial: 1 },
+  { unique: true }
 );
 
 const Pais = mongoose.model('Pais', paisSchema,'Grupo-12'); 
