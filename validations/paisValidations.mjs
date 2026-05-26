@@ -85,3 +85,14 @@ export const extraerErrores = (req) => {  // Extrae los errores de validación d
   resultado.array().forEach((e) => { errores[e.path] = e.msg; });  // Recorre cada error y lo agrega al objeto errores con la estructura { campo: mensaje }
   return errores;  // Devuelve el objeto de errores
 };
+
+
+/**
+ * Convierte un valor a un array de strings limpio.
+ * Maneja formatos separados por coma, arrays existentes o valores vacíos.
+ */
+export const toArray = (valor) => {
+  if (Array.isArray(valor)) return valor.filter(Boolean); 
+  if (!valor || String(valor).trim() === '') return [];
+  return String(valor).split(',').map((v) => v.trim()).filter(Boolean);
+};

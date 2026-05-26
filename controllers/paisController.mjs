@@ -1,45 +1,9 @@
-// controllers/paisController.mjs
+//  Controladores para manejar las rutas relacionadas con países. Se encargan de recibir las solicitudes HTTP, validar los datos, llamar a los servicios correspondientes y renderizar las vistas o redirigir según corresponda. También manejan los mensajes flash para informar al usuario sobre el resultado de sus acciones (éxito o error).
 import * as paisService        from '../services/paisService.mjs';
 import * as apiService         from '../services/apiService.mjs';
-import { extraerErrores }      from '../validations/paisValidations.mjs';
+import { extraerErrores}      from '../validations/paisValidations.mjs';
+import { buildDatos, adaptarDatosAPI } from '../utils/formatters.mjs'; // <-- Importación limpia de funciones específicas para formatear datos 
 
-//  Controladores para manejar las rutas relacionadas con países. Se encargan de recibir las solicitudes HTTP, validar los datos, llamar a los servicios correspondientes y renderizar las vistas o redirigir según corresponda. También manejan los mensajes flash para informar al usuario sobre el resultado de sus acciones (éxito o error).
-const toArray = (valor) => {
-  if (Array.isArray(valor)) return valor.filter(Boolean);
-  if (!valor || String(valor).trim() === '') return [];
-  return String(valor).split(',').map((v) => v.trim()).filter(Boolean);
-};
-
-// Construye un objeto con los datos limpios y formateados para crear o actualizar un país. Este método centraliza la lógica de transformación de los datos del formulario, asegurando que se apliquen las mismas reglas de validación y formato tanto en la creación como en la actualización, y que el campo "creador" se asigne correctamente desde las variables de entorno.
-const buildDatos = (body) => ({
-  nombreOficial: (body.nombreOficial || '').trim(),
-  nombreComun:   (body.nombreComun   || '').trim(),
-  capital:    toArray(body.capital),
-  fronteras:  toArray(body.fronteras),
-  usos:      toArray(body.usos),
-  area:       parseFloat(body.area)    || 0,
-  poblacion:  parseInt(body.poblacion) || 0,
-  gini:       (body.gini !== '' && body.gini != null) ? parseFloat(body.gini) : null,
-  region:     (body.region    || 'Americas').trim(),
-  subregion:  (body.subregion || '').trim(),
-  creador:    process.env.CREADOR || 'Estudiante',
-});
-
-// Helper interno para limpiar la respuesta que proviene de la API en el seed
-const adaptarDatosAPI = (p) => ({
-  nombreOficial: (p.nombreOficial || '').trim(),
-  nombreComun:   (p.nombreComun   || '').trim(),
-  capital:       p.capital,
-  fronteras:     p.fronteras,
-  usos:          p.usos,
-  area:          p.area,
-  poblacion:     p.poblacion,
-  gini:          p.gini,
-  region:        p.region,
-  subregion:     p.subregion,
-  banderas:      p.banderas,
-  creador:       process.env.CREADOR || 'Estudiante'
-});
 
 export const index = async (req, res) => {
   try {
@@ -61,7 +25,6 @@ export const index = async (req, res) => {
     // Si no se especifica límite, se muestran 5 países por página por defecto. Si el valor de límite no es un número válido, también se muestra el límite por defecto para evitar errores en la consulta a la base de datos.
     //const limite = parseInt(req.query.limite) || 5; 
    const limite = Math.min(10, Math.max(5, parseInt(req.query.limite, 10) || 5)); // CORREGIDO: Aseguramos que el límite esté entre 1 y 20 para evitar valores negativos, cero o excesivamente altos que podrían afectar el rendimiento de la aplicación y la experiencia del usuario.)
-
 
 
     // CORREGIDO: Llamamos a la capa de servicios para que ejecute el validador estructural
@@ -195,6 +158,7 @@ export const exportarCSV = async (req, res) => {
       p.creador   || '',
     ]);
 
+   // CORREGIDO: Aseguramos que los valores se escapen correctamente para CSV, manejando comillas y caracteres especiales, y agregamos la marca de orden de bytes (BOM) para garantizar la compatibilidad con Excel al abrir el archivo CSV. 
     const csv = [cabecera, ...filas]
       .map((fila) => fila.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(','))
       .join('\n');
