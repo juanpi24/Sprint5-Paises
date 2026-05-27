@@ -6,12 +6,6 @@ import { extraerErrores, formatearErrorDB } from '../validations/paisValidations
 import { buildDatos, adaptarDatosAPI } from '../utils/formatters.mjs';
 
 
-export const mostrarLandingAgregar = async (req, res) => {
-  res.render('pages/home', {
-    title: 'Administrar Catálogo'
-  });
-};
-
 // Controlador para mostrar el dashboard con la lista de países, filtros y paginación. Delegamos toda la lógica de negocio al servicio para mantener el controlador limpio y enfocado en manejar la petición y respuesta.
 export const index = async (req, res) => {
   try {

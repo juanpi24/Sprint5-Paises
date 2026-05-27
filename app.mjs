@@ -59,12 +59,11 @@ app.use(methodOverride('_method'));
 // ── Conexión a MongoDB
 connectDB();
 
-// ── Rutas
+// ── Rutas del recurso "paises"  
 app.use('/paises', paisRoutes);
 
-// ── Rutas adicionales
-app.get('/', (req, res) => res.redirect('/paises'));
-app.get('/about', (req, res) => res.render('pages/about', { title: 'Acerca de' }));
+// ── Ruta principal  del landing  
+app.get('/', (req, res) => res.render('pages/home', { title: 'Panel Principal' }));
 
 // ── 404
 app.use((req, res) => {

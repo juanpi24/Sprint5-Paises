@@ -8,8 +8,11 @@ import { reglasValidacionPais } from '../validations/paisValidations.mjs';
 
 const router = Router();
 
+// -- Ruta Principal del landing) ────────────────────────────────────────────────
+router.get('/', (req, res) => res.render('pages/home', { title: 'Panel Principal' }));
+router.get('/about', (req, res) => res.render('pages/about', { title: 'Acerca de' }));
+
 // ── Rutas especiales (deben ir ANTES de /:id) ─────────────────────────────────
-router.get('/', ctrl.mostrarLandingAgregar); 
 router.get('/exportar/csv', ctrl.exportarCSV);
 router.post('/seed',        ctrl.seed);
 router.get('/nuevo',        ctrl.mostrarFormularioCrear);

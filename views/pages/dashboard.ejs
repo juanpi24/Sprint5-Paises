@@ -22,7 +22,7 @@
 </div>
 
 <%# ── Filtros (Avanzado #1) ──────────────────────────────────────────────── %>
-<form class="filters-form" method="GET" action="/paises">
+<form class="filters-form" method="GET" action="/paises/dashboard">
   <div class="filters-grid">
     <div class="form-group">
       <label for="f-nombre">Nombre</label>
@@ -55,7 +55,7 @@
     </div>
     <div class="form-group form-group-actions">
       <button type="submit" class="btn btn-primary">🔍 Filtrar</button>
-      <a href="/paises" class="btn btn-ghost">✕ Limpiar</a>
+      <a href="/paises/dashboard" class="btn btn-ghost">✕ Limpiar</a>
     </div>
   </div>
 </form>
@@ -167,16 +167,16 @@
 %>
 <nav class="pagination">
   <% if (pagina > 1) { %>
-    <a href="/paises?<%= qBase %>&pagina=1"            class="page-btn">« Primera</a>
-    <a href="/paises?<%= qBase %>&pagina=<%= pagina-1 %>" class="page-btn">‹ Anterior</a>
+    <a href="/paises/dashboard?<%= qBase %>&pagina=1"            class="page-btn">« Primera</a>
+    <a href="/paises/dashboard?<%= qBase %>&pagina=<%= pagina-1 %>" class="page-btn">‹ Anterior</a>
   <% } %>
   <% for (let i = inicio; i <= fin; i++) { %>
-    <a href="/paises?<%= qBase %>&pagina=<%= i %>"
+    <a href="/paises/dashboard?<%= qBase %>&pagina=<%= i %>"
        class="page-btn <%= i === pagina ? 'page-btn-active' : '' %>"><%= i %></a>
   <% } %>
   <% if (pagina < paginas) { %>
-    <a href="/paises?<%= qBase %>&pagina=<%= pagina+1 %>" class="page-btn">Siguiente ›</a>
-    <a href="/paises?<%= qBase %>&pagina=<%= paginas %>"  class="page-btn">Última »</a>
+    <a href="/paises/dashboard?<%= qBase %>&pagina=<%= pagina+1 %>" class="page-btn">Siguiente ›</a>
+    <a href="/paises/dashboard?<%= qBase %>&pagina=<%= paginas %>"  class="page-btn">Última »</a>
   <% } %>
   <span class="page-info">Página <%= pagina %> de <%= paginas %> · <%= total %> resultados</span>
 </nav>
